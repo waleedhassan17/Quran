@@ -1,6 +1,8 @@
-import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity } from 'react-native';
-import { useEffect, useState } from 'react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+    StyleSheet, Text, View, TextInput,
+    FlatList, TouchableOpacity
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const Search = () => {
@@ -10,11 +12,20 @@ const Search = () => {
     const navigation = useNavigation();
 
     const getAPIData = async () => {
-        const url = 'https://api.alquran.cloud/v1/quran/en.asad';
-        const result = await fetch(url);
-        const jsonData = await result.json();
-        setData(jsonData.data.surahs);
-    }
+        try {
+            const url = 'https://api.alquran.cloud/v1/quran/en.asad';
+            const result = await fetch(url);
+            const jsonData = await result.json();
+            const allSurahs = jsonData.data.surahs;
+
+            // ✅ only keep last 10 Surahs (surah 105 to 114)
+            const last10Surahs = allSurahs.slice(-10);
+
+            setData(last10Surahs);
+        } catch (error) {
+            console.error("Failed to fetch Surah data:", error);
+        }
+    };
 
     useEffect(() => {
         getAPIData();
@@ -29,7 +40,10 @@ const Search = () => {
     }, [searchQuery, data]);
 
     const handleSurahClick = (item) => {
-        navigation.navigate('SurahDetail', { surahNumber: item.number, surahName: item.englishName });
+        navigation.navigate('SurahDetail', {
+            surahNumber: item.number,
+            surahName: item.englishName
+        });
     };
 
     return (
@@ -37,7 +51,7 @@ const Search = () => {
             <View style={styles.searchBarContainer}>
                 <TextInput
                     style={styles.searchBar}
-                    placeholder='Search Surah'
+                    placeholder='Search Last 10 Surahs'
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -82,10 +96,7 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         borderRadius: 5,
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,

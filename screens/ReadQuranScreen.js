@@ -1,12 +1,17 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, TextInput, Alert } from 'react-native';
+import {
+    StyleSheet, Text, View, FlatList, RefreshControl,
+    ActivityIndicator, TouchableOpacity, TextInput, Alert
+} from 'react-native';
 
-const ayahData = require('./ayah.json');
+const englishData = require('./english.json');
+const urduData = require('./urdu.json');
 
 const ReadQuranScreen = () => {
     const itemsPerPage = 10;
-    const totalPages = Math.ceil(ayahData.length / itemsPerPage);
-    
+    const totalAyahs = englishData.length;
+    const totalPages = Math.ceil(totalAyahs / itemsPerPage);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -14,14 +19,20 @@ const ReadQuranScreen = () => {
 
     const flatListRef = useRef(null);
 
-    // Get paginated data
+    // Get paginated and merged data
     const getPaginatedData = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
-        return ayahData.slice(startIndex, endIndex);
+        const englishSlice = englishData.slice(startIndex, endIndex);
+        const urduSlice = urduData.slice(startIndex, endIndex);
+
+        return englishSlice.map((item, idx) => ({
+            ...item,
+            UrduTranslation: urduSlice[idx]?.Translation,
+            UrduTafseer: urduSlice[idx]?.Tafseer,
+        }));
     };
 
-    // Pull-to-Refresh function
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         setTimeout(() => {
@@ -30,7 +41,6 @@ const ReadQuranScreen = () => {
         }, 1000);
     }, []);
 
-    // Infinite Scroll (Load More)
     const loadMoreData = useCallback(() => {
         if (loadingMore || currentPage >= totalPages) return;
         setLoadingMore(true);
@@ -40,10 +50,9 @@ const ReadQuranScreen = () => {
         }, 1000);
     }, [currentPage, loadingMore]);
 
-    // Scroll to Ayah function
     const scrollToAyah = () => {
         const index = parseInt(ayahNumber) - 1;
-        if (isNaN(index) || index < 0 || index >= ayahData.length) {
+        if (isNaN(index) || index < 0 || index >= totalAyahs) {
             Alert.alert("Invalid Ayah", "Please enter a valid Ayah number.");
             return;
         }
@@ -56,7 +65,6 @@ const ReadQuranScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Input field for Ayah Number */}
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
@@ -83,18 +91,17 @@ const ReadQuranScreen = () => {
                 getItemLayout={(data, index) => ({ length: 100, offset: 100 * index, index })}
             />
 
-            {/* Pagination Controls */}
             <View style={styles.paginationContainer}>
-                <TouchableOpacity 
-                    onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+                <TouchableOpacity
+                    onPress={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
                     style={[styles.button, currentPage === 1 && styles.disabledButton]}
                 >
                     <Text style={styles.buttonText}>Previous</Text>
                 </TouchableOpacity>
                 <Text style={styles.pageText}>Page {currentPage} of {totalPages}</Text>
-                <TouchableOpacity 
-                    onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+                <TouchableOpacity
+                    onPress={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
                     style={[styles.button, currentPage === totalPages && styles.disabledButton]}
                 >
@@ -110,7 +117,8 @@ const Item = ({ item }) => {
         <View style={styles.itemContainer}>
             <View style={styles.rowContainer}>
                 <View style={styles.translation}>
-                    <Text style={styles.translationText}>{item.Translation}</Text>
+                    <Text style={styles.translationText}>EN: {item.Translation}</Text>
+                    <Text style={styles.translationText}>UR: {item.UrduTranslation}</Text>
                 </View>
                 <View style={styles.arabic}>
                     <Text style={styles.arabicText}>{item.AyahTextMuhammadi}</Text>
@@ -122,7 +130,8 @@ const Item = ({ item }) => {
                 </Text>
             </View>
             <View style={styles.tafseerContainer}>
-                <Text style={styles.tafseerText}>{item.Tafseer}</Text>
+                <Text style={styles.tafseerText}>EN: {item.Tafseer}</Text>
+                <Text style={styles.tafseerText}>UR: {item.UrduTafseer}</Text>
             </View>
         </View>
     );

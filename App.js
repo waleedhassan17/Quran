@@ -6,6 +6,7 @@ import ReadQuran from './screens/ReadQuranScreen';
 import Search from './screens/Search';
 import SurahDetail from './screens/SurahDetail';
 
+
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -16,6 +17,7 @@ const App = () => {
       <Stack.Screen name='ReadQuran' component={ReadQuran} />
       <Stack.Screen name='Search' component={Search} />
       <Stack.Screen name='SurahDetail' component={SurahDetail} />
+      
        
       </Stack.Navigator>
     </NavigationContainer>

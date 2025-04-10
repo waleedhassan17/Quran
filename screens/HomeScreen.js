@@ -39,7 +39,7 @@ const HomeScreen = () => {
             <FontAwesome5 name="bookmark" size={24} color="black" />
             <Text style={styles.buttonText}>Book Mark</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.featureButton}>
+          <TouchableOpacity style={styles.featureButton} onPress={() => navigation.navigate('Settings')}>
             <FontAwesome5 name="cogs" size={24} color="black" />
             <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
